@@ -37,7 +37,7 @@ function generateParticles(amount) {
       innerHeight / 2,
       4,
       generateColor(),
-      0.02
+      0.1
     );
   }
 }
