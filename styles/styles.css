@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=Poiret+One);
+@import url(https://fonts.googleapis.com/css2?family=Monoton&display=swap);
 
 body {
   width: 100%;
@@ -16,7 +16,7 @@ p{
   width:100%;
   color:rgb(233, 21, 219);
   font-size:6em;
-  font-family: 'Poiret One', cursive;
+  font-family: 'Monoton', cursive;
   letter-spacing: 6px;
   text-align: center;
   position: relative;
