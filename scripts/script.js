@@ -1,84 +1,92 @@
-window.requestAnimFrame = (function() {
-    return window.requestAnimationFrame ||
-      window.webkitRequestAnimationFrame ||
-      window.mozRequestAnimationFrame ||
-      window.oRequestAnimationFrame ||
-      window.msRequestAnimationFrame ||
-      function(callback) {
-        window.setTimeout(callback, 1000 / 60);
-      };
-  })();
-  var c = document.getElementById('canv');
-  var $ = c.getContext('2d');
-  var w = c.width = window.innerWidth;
-  var h = c.height = window.innerHeight;
-  var _w = w * 0.5;
-  var _h = h * 0.5;
-  var arr = [];
-  var cnt = 0;
-  
-  window.addEventListener('load', resize);
-  window.addEventListener('resize', resize, false);
-  
-  function resize() {
-    c.width = w = window.innerWidth;
-    c.height = h = window.innerHeight;
-    c.style.position = 'absolute';
-    c.style.left = (window.innerWidth - w) *
-      .01 + 'px';
-    c.style.top = (window.innerHeight - h) *
-      .01 + 'px';
+const canvas = document.getElementById("cw");
+const context = canvas.getContext("2d");
+context.globalAlpha = 0.5;
+
+const cursor = {
+  x: innerWidth / 2,
+  y: innerHeight / 2,
+};
+
+let particlesArray = [];
+
+generateParticles(101);
+setSize();
+anim();
+
+addEventListener("mousemove", (e) => {
+  cursor.x = e.clientX;
+  cursor.y = e.clientY;
+});
+
+addEventListener(
+  "touchmove",
+  (e) => {
+    e.preventDefault();
+    cursor.x = e.touches[0].clientX;
+    cursor.y = e.touches[0].clientY;
+  },
+  { passive: false }
+);
+
+addEventListener("resize", () => setSize());
+
+function generateParticles(amount) {
+  for (let i = 0; i < amount; i++) {
+    particlesArray[i] = new Particle(
+      innerWidth / 2,
+      innerHeight / 2,
+      4,
+      generateColor(),
+      0.02
+    );
   }
-  
-  function anim() {
-    cnt++;
-    if (cnt % 6) draw();
-    window.requestAnimFrame(anim);
+}
+
+function generateColor() {
+  let hexSet = "0123456789ABCDEF";
+  let finalHexString = "#";
+  for (let i = 0; i < 6; i++) {
+    finalHexString += hexSet[Math.ceil(Math.random() * 15)];
   }
-  anim();
-  
-  function draw() {
-  
-    var splot = {
-      x: rng(_w - 900, _w + 900),
-      y: rng(_h - 900, _h + 900),
-      r: rng(20, 80),
-      spX: rng(-1, 1),
-      spY: rng(-1, 1)
+  return finalHexString;
+}
+
+function setSize() {
+  canvas.height = innerHeight;
+  canvas.width = innerWidth;
+}
+
+function Particle(x, y, particleTrailWidth, strokeColor, rotateSpeed) {
+  this.x = x;
+  this.y = y;
+  this.particleTrailWidth = particleTrailWidth;
+  this.strokeColor = strokeColor;
+  this.theta = Math.random() * Math.PI * 2;
+  this.rotateSpeed = rotateSpeed;
+  this.t = Math.random() * 150;
+
+  this.rotate = () => {
+    const ls = {
+      x: this.x,
+      y: this.y,
     };
-  
-    arr.push(splot);
-    while (arr.length > 100) {
-      arr.shift();
-    }
-    $.clearRect(0, 0, w, h);
-  
-    for (var i = 0; i < arr.length; i++) {
-  
-      splot = arr[i];;
-      $.fillStyle = rndCol();
-      $.beginPath();
-      $.arc(splot.x, splot.y, splot.r, 0, Math.PI * 2, true);
-      $.shadowBlur = 80;
-      $.shadowOffsetX = 2;
-      $.shadowOffsetY = 2;
-      $.shadowColor = rndCol();
-      $.globalCompositeOperation = 'lighter';
-      $.fill();
-  
-      splot.x = splot.x + splot.spX;
-      splot.y = splot.y + splot.spY;
-      splot.r = splot.r * 0.96;
-    }
-  }
-  
-  function rndCol() {
-    var r = Math.floor(Math.random() * 180);
-    var g = Math.floor(Math.random() * 60);
-    var b = Math.floor(Math.random() * 100);
-    return "rgb(" + r + "," + g + "," + b + ")";
-  }
-  
-  function rng(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
+    this.theta += this.rotateSpeed;
+    this.x = cursor.x + Math.cos(this.theta) * this.t;
+    this.y = cursor.y + Math.sin(this.theta) * this.t;
+    context.beginPath();
+    context.lineWidth = this.particleTrailWidth;
+    context.strokeStyle = this.strokeColor;
+    context.moveTo(ls.x, ls.y);
+    context.lineTo(this.x, this.y);
+    context.stroke();
+  };
+}
+
+function anim() {
+  requestAnimationFrame(anim);
+
+  context.fillStyle = "rgba(0,0,0,0.05)";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  particlesArray.forEach((particle) => particle.rotate());
+}
